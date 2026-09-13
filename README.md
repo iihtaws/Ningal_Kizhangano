@@ -2,39 +2,37 @@
 
 
 
-# [Project Name] 🎯
+#Ningal Kizhangano 🎯
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: Potato
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: Pavan Sajeev K K - CUSAT
+- Member 2: Swathi T - CUSAT
+
 
 ### Project Description
-[2-3 lines about what your project does]
+Everything in this world is either a potato or a lookalike of potato...This website helps you to find your or any object's resemblance 
+with potato.
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+The problem is to find which object is a potato..(it is obvious) but how much an object similar to potato...
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+We find the resemblance percentage and says which one is a potato and which one is not.
 
 ## Technical Details
 ### Technologies/Components Used
 For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
+React + Vite + Tailwind CSS + Lucide Icons for frontend
+Node.js + Express + Multer + Mongoose for backend
+MongoDB for database
+Python FastAPI + PyTorch + Hugging Face CLIP (`openai/clip-vit-base-patch32`) for ML service
 
-For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
+---
 
 ### Implementation
 For Software:
