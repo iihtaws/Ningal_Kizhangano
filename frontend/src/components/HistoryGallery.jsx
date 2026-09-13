@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { History, Trash2, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
+import { getImageUrl } from '../config';
 
 export default function HistoryGallery({ history = [], onHistoryDeleted, onSelectHistoryItem, onViewLeaderboard, theme = 'dark' }) {
   const [filter, setFilter] = useState('all');
@@ -129,7 +130,7 @@ export default function HistoryGallery({ history = [], onHistoryDeleted, onSelec
                     {/* Thumbnail */}
                     <div className="relative h-28 w-full bg-black/40 overflow-hidden flex items-center justify-center">
                       <img
-                        src={item.imageUrl}
+                        src={getImageUrl(item.imageUrl)}
                         alt={item.ratingTitle || 'History item'}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {

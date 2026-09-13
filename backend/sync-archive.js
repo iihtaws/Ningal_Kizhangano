@@ -4,34 +4,47 @@ const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 const Analysis = require('./models/Analysis');
+require('dotenv').config();
 
-async function run() {
-  await mongoose.connect('mongodb://localhost:27017/potato-meter');
+const cuteNames = [
+  'Golden Russet', 'Sweet Tuber', 'Crispy Fry', 'Mystery Spud',
+  'Captain Kizhang', 'Royal Yukon', 'Spudzilla', 'Starch Lord',
+  'Earthy Pebble', 'Tiny Tot', 'Hashbrown Hero', 'Tater Commander',
+  'Chippy Chip', 'Grandpa Spud', 'Baby Potato', 'Hot Wedge'
+];
+
+async function seedDatabase() {
   const uploadsDir = path.join(__dirname, 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    console.log('[Seed] No uploads directory found, skipping seed.');
+    return 0;
+  }
+
   const diskFiles = fs.readdirSync(uploadsDir).filter(f => f.startsWith('potato-'));
   const existing = await Analysis.find({}, { filename: 1 }).lean();
   const existingSet = new Set(existing.map(e => e.filename));
   const missing = diskFiles.filter(f => !existingSet.has(f));
-  console.log('Total files:', diskFiles.length, 'Existing in DB:', existing.length, 'Missing to sync:', missing.length);
 
-  const cuteNames = [
-    'Golden Russet', 'Sweet Tuber', 'Crispy Fry', 'Mystery Spud',
-    'Captain Kizhang', 'Royal Yukon', 'Spudzilla', 'Starch Lord',
-    'Earthy Pebble', 'Tiny Tot', 'Hashbrown Hero', 'Tater Commander',
-    'Chippy Chip', 'Grandpa Spud', 'Baby Potato', 'Hot Wedge'
-  ];
+  console.log(`[Seed] Total disk files: ${diskFiles.length}, In DB: ${existing.length}, Missing: ${missing.length}`);
+  if (missing.length === 0) {
+    return 0;
+  }
 
+  const mlServiceUrl = (process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000').replace(/\/+$/, '');
   let synced = 0;
+
   for (const filename of missing) {
     const filePath = path.join(uploadsDir, filename);
     let mlData = null;
+
     try {
       const formData = new FormData();
       formData.append('file', fs.createReadStream(filePath), {
         filename: filename,
         contentType: filename.endsWith('.png') ? 'image/png' : 'image/jpeg'
       });
-      const resp = await axios.post('http://127.0.0.1:8000/predict', formData, {
+
+      const resp = await axios.post(`${mlServiceUrl}/predict`, formData, {
         headers: { ...formData.getHeaders() },
         timeout: 4000
       });
@@ -77,13 +90,25 @@ async function run() {
       createdAt: fileDate
     });
     synced++;
-    if (synced % 10 === 0) console.log('Synced', synced, 'records...');
+    if (synced % 10 === 0) console.log(`[Seed] Seeded ${synced} records...`);
   }
-  console.log('Finished syncing! Total newly synced:', synced);
-  process.exit(0);
+
+  console.log(`[Seed] Finished seeding! Total newly synced: ${synced}`);
+  return synced;
 }
 
-run().catch(err => {
-  console.error('Sync failed:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/potato-meter';
+  mongoose.connect(mongoUri)
+    .then(async () => {
+      console.log(`[Seed] Connected to MongoDB at ${mongoUri}`);
+      await seedDatabase();
+      process.exit(0);
+    })
+    .catch(err => {
+      console.error('[Seed] Failed:', err);
+      process.exit(1);
+    });
+}
+
+module.exports = { seedDatabase };
