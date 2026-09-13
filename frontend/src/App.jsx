@@ -9,6 +9,7 @@ import Footer from './components/Footer';
 import CinematicIntro from './components/CinematicIntro';
 import { AlertCircle, ArrowRight, Trophy } from 'lucide-react';
 import axios from 'axios';
+import { getImageUrl } from './config';
 
 export default function App() {
   // 5-second cinematic intro shown only on initial load
@@ -288,7 +289,7 @@ export default function App() {
               onSwitchToScanner={() => handleViewChange('scanner')}
               onInspectItem={(item) => {
                 setCurrentAnalysis(item);
-                setPreviewUrl(item.imageUrl);
+                setPreviewUrl(getImageUrl(item.imageUrl));
                 handleViewChange('scanner');
                 setTimeout(() => {
                   window.scrollTo({ top: 100, behavior: 'smooth' });
@@ -396,7 +397,7 @@ export default function App() {
 
                       <div className="relative rounded-2xl overflow-hidden bg-black/40 border border-amber-500/20 max-h-[300px] flex items-center justify-center group shadow-xl">
                         <img
-                          src={currentAnalysis.imageUrl || previewUrl}
+                          src={getImageUrl(currentAnalysis.imageUrl) || previewUrl}
                           alt="Analyzed object"
                           className="max-h-[300px] w-auto object-contain transition-transform duration-500 group-hover:scale-105"
                           onError={(e) => {
@@ -433,7 +434,7 @@ export default function App() {
                   <div className="md:col-span-7 flex">
                     <ScoreMeter
                       analysis={currentAnalysis}
-                      previewUrl={currentAnalysis.imageUrl || previewUrl}
+                      previewUrl={getImageUrl(currentAnalysis.imageUrl) || previewUrl}
                       onReset={handleReset}
                       onViewLeaderboard={() => handleViewChange('leaderboard')}
                       theme={theme}
@@ -451,7 +452,7 @@ export default function App() {
                 }}
                 onSelectHistoryItem={(item) => {
                   setCurrentAnalysis(item);
-                  setPreviewUrl(item.imageUrl);
+                  setPreviewUrl(getImageUrl(item.imageUrl));
                   window.scrollTo({ top: 100, behavior: 'smooth' });
                 }}
                 onViewLeaderboard={() => handleViewChange('leaderboard')}
@@ -510,7 +511,7 @@ export default function App() {
                           {/* Image Thumbnail */}
                           <div className="relative w-14 h-14 rounded-xl overflow-hidden bg-black/40 border border-amber-500/30 flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
                             <img
-                              src={leader.imageUrl}
+                              src={getImageUrl(leader.imageUrl)}
                               alt={leader.userName}
                               className="w-full h-full object-cover"
                               onError={(e) => {

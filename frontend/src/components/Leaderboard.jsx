@@ -22,6 +22,7 @@ import {
   Skull
 } from 'lucide-react';
 import axios from 'axios';
+import { getImageUrl } from '../config';
 
 export default function Leaderboard({ theme = 'dark', onInspectItem, onSwitchToScanner }) {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -206,7 +207,7 @@ export default function Leaderboard({ theme = 'dark', onInspectItem, onSwitchToS
 
                 <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black/40 mb-3 border border-slate-500/20">
                   <img
-                    src={podiumTop3[0].imageUrl}
+                    src={getImageUrl(podiumTop3[0].imageUrl)}
                     alt={podiumTop3[0].userName}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
@@ -261,7 +262,7 @@ export default function Leaderboard({ theme = 'dark', onInspectItem, onSwitchToS
 
                 <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black/40 mb-3 border-2 border-amber-500/40 shadow-inner">
                   <img
-                    src={podiumTop3[1].imageUrl}
+                    src={getImageUrl(podiumTop3[1].imageUrl)}
                     alt={podiumTop3[1].userName}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
@@ -313,7 +314,7 @@ export default function Leaderboard({ theme = 'dark', onInspectItem, onSwitchToS
 
                 <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-black/40 mb-3 border border-amber-700/20">
                   <img
-                    src={podiumTop3[2].imageUrl}
+                    src={getImageUrl(podiumTop3[2].imageUrl)}
                     alt={podiumTop3[2].userName}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     onError={(e) => {
@@ -559,7 +560,7 @@ export default function Leaderboard({ theme = 'dark', onInspectItem, onSwitchToS
                   <div className="sm:col-span-2 flex items-center gap-3">
                     <div className="relative w-16 h-16 sm:w-14 sm:h-14 rounded-xl overflow-hidden bg-black/50 border border-slate-700/60 flex-shrink-0 group-hover:border-amber-500/50 shadow-md">
                       <img
-                        src={item.imageUrl}
+                        src={getImageUrl(item.imageUrl)}
                         alt={item.userName || 'Subject'}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         onError={(e) => {
@@ -718,7 +719,7 @@ export default function Leaderboard({ theme = 'dark', onInspectItem, onSwitchToS
             {/* Uploaded Image Preview */}
             <div className="relative rounded-2xl overflow-hidden bg-black/60 border border-amber-500/20 max-h-[280px] flex items-center justify-center mb-4 shadow-xl">
               <img
-                src={selectedInspectItem.imageUrl}
+                src={getImageUrl(selectedInspectItem.imageUrl)}
                 alt={selectedInspectItem.userName}
                 className="max-h-[280px] w-auto object-contain"
                 onError={(e) => {
