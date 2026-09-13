@@ -1,9 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Award, Flame, Sparkles, CheckCircle2, ShieldAlert, Cpu } from 'lucide-react';
+import { Award, Sparkles, Cpu, RotateCcw, CheckCircle2, TrendingUp, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function ScoreMeter({ analysis }) {
+// Dynamic Score Interpretation based on the exact user specification
+export function getScoreInterpretation(score) {
+  const s = Number(score) || 0;
+  if (s < 20) return 'Not very potato';
+  if (s < 40) return 'Potato-ish';
+  if (s < 60) return 'Suspiciously potato';
+  if (s < 80) return 'Definitely potato-like';
+  if (s < 95) return 'Very potato';
+  return 'Extremely potato';
+}
+
+export default function ScoreMeter({ analysis, previewUrl, onReset, theme = 'dark' }) {
   const [displayScore, setDisplayScore] = useState(0);
+
+  const isDark = theme === 'dark';
+  const targetScore = analysis ? Number(analysis.score) || 0 : 0;
 
   useEffect(() => {
     if (!analysis) {
@@ -11,14 +25,12 @@ export default function ScoreMeter({ analysis }) {
       return;
     }
 
-    const targetScore = analysis.score || 0;
-    
-    // Trigger confetti if high potato score (> 80%)!
-    if (targetScore >= 80) {
+    // Dynamic celebration effect only if score is 95%+ (tasteful and restrained)
+    if (targetScore >= 95) {
       try {
         confetti({
-          particleCount: 80,
-          spread: 70,
+          particleCount: 45,
+          spread: 55,
           origin: { y: 0.6 },
           colors: ['#f59e0b', '#d97706', '#fbbf24', '#fef3c7']
         });
@@ -26,8 +38,8 @@ export default function ScoreMeter({ analysis }) {
     }
 
     let start = 0;
-    const duration = 1200; // ms
-    const stepTime = 20;
+    const duration = 1200; // 1.2s smooth count-up
+    const stepTime = 16;
     const steps = duration / stepTime;
     const increment = targetScore / steps;
 
@@ -42,76 +54,115 @@ export default function ScoreMeter({ analysis }) {
     }, stepTime);
 
     return () => clearInterval(timer);
-  }, [analysis]);
+  }, [analysis, targetScore]);
 
   if (!analysis) {
     return (
-      <div className="glass-panel rounded-3xl p-8 h-full flex flex-col items-center justify-center text-center min-h-[420px]">
-        <div className="w-20 h-20 rounded-full bg-slate-900/80 border border-slate-800 flex items-center justify-center text-4xl mb-4 animate-float">
+      <div className={`w-full rounded-3xl p-8 flex flex-col items-center justify-center text-center min-h-[380px] transition-all duration-300 ${
+        isDark ? 'glass-panel-dark' : 'glass-panel-light'
+      }`}>
+        <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-3xl mb-4 animate-float">
           🥔
         </div>
-        <h3 className="text-xl font-bold text-slate-200">Awaiting Image Analysis</h3>
-        <p className="text-sm text-slate-400 max-w-xs mt-2">
-          Upload an image on the left or try one of the instant samples to compute its potato index!
+        <h3 className={`text-base font-bold tracking-tight ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
+          Awaiting Visual Analysis
+        </h3>
+        <p className={`text-xs max-w-xs mt-1.5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+          Upload an image on the left or select an instant sample to calculate its visual potato resemblance index.
         </p>
       </div>
     );
   }
 
-  const score = analysis.score || 0;
-  const breakdown = analysis.breakdown || { earthiness: 0, texture_match: 0, starch_index: 0, roundness_factor: 0 };
-  
-  // Radial SVG Math
-  const radius = 90;
+  const interpretation = getScoreInterpretation(targetScore);
+  const breakdown = analysis.breakdown || {};
+  const topMatches = analysis.topMatches || [];
+
+  // Radial SVG calculation
+  const radius = 86;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (displayScore / 100) * circumference;
 
-  const isHighSpud = score >= 65;
+  // Dynamic visual styling classes based on score
+  const isHighPotato = targetScore >= 80;
+  const isMediumPotato = targetScore >= 40 && targetScore < 80;
+  const isLowPotato = targetScore < 40;
+
+  const strokeColorClass = isHighPotato 
+    ? 'text-amber-500' 
+    : isMediumPotato 
+    ? 'text-yellow-400' 
+    : isDark ? 'text-slate-600' : 'text-slate-400';
+
+  const glowClass = isHighPotato 
+    ? 'shadow-[0_0_50px_-10px_rgba(245,158,11,0.35)]' 
+    : isMediumPotato 
+    ? 'shadow-[0_0_35px_-12px_rgba(245,158,11,0.2)]' 
+    : '';
 
   return (
-    <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+    <div className={`w-full rounded-3xl p-6 sm:p-8 transition-all duration-500 relative overflow-hidden flex flex-col justify-between ${glowClass} ${
+      isDark ? 'glass-panel-dark' : 'glass-panel-light'
+    }`}>
       
-      {/* Background glow circle */}
-      <div className={`absolute top-0 right-0 w-64 h-64 rounded-full blur-3xl opacity-20 pointer-events-none ${
-        isHighSpud ? 'bg-amber-500' : 'bg-slate-700'
-      }`}></div>
+      {/* Dynamic ambient glow blob inside card */}
+      <div
+        className={`absolute -top-12 -right-12 w-64 h-64 rounded-full blur-3xl pointer-events-none transition-all duration-700 ${
+          isHighPotato
+            ? 'bg-amber-500/20'
+            : isMediumPotato
+            ? 'bg-yellow-500/10'
+            : 'bg-transparent'
+        }`}
+      />
 
       <div>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-amber-400" />
-            <h2 className="text-lg font-bold text-slate-100">Potato Similarity Meter</h2>
+        {/* Header Bar */}
+        <div className="flex items-center justify-between gap-2 mb-6">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className={`text-base font-bold tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                Resemblance Verdict
+              </h2>
+              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                OpenAI CLIP Zero-Shot Neural Measurement
+              </p>
+            </div>
           </div>
-          <span className="px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-semibold text-amber-400 flex items-center gap-1.5">
-            <Cpu className="w-3.5 h-3.5" />
-            {analysis.engine || 'CLIP ViT-B/32'}
+
+          <span className={`px-2.5 py-1 rounded-xl text-[11px] font-medium border flex items-center gap-1.5 ${
+            isDark ? 'bg-slate-900/80 border-slate-800 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
+          }`}>
+            <Cpu className="w-3 h-3 text-amber-500" />
+            <span>{analysis.engine || 'CLIP ViT-B/32'}</span>
           </span>
         </div>
 
-        {/* Circular Meter Gauge */}
-        <div className="flex flex-col items-center justify-center my-4">
-          <div className="relative w-56 h-56 flex items-center justify-center">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 220 220">
-              {/* Background ring */}
+        {/* Centerpiece Radial Meter */}
+        <div className="flex flex-col items-center justify-center my-6">
+          
+          <div className="relative w-52 h-52 flex items-center justify-center">
+            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 210 210">
+              {/* Background circular track */}
               <circle
-                cx="110"
-                cy="110"
+                cx="105"
+                cy="105"
                 r={radius}
-                className="text-slate-800"
-                strokeWidth="16"
+                className={isDark ? 'text-slate-800/80' : 'text-slate-200'}
+                strokeWidth="14"
                 stroke="currentColor"
                 fill="transparent"
               />
-              {/* Progress ring */}
+              {/* Animated progress ring */}
               <circle
-                cx="110"
-                cy="110"
+                cx="105"
+                cy="105"
                 r={radius}
-                className={`transition-all duration-700 ease-out ${
-                  score >= 70 ? 'text-amber-500' : score >= 40 ? 'text-yellow-400' : 'text-slate-500'
-                }`}
-                strokeWidth="16"
+                className={`${strokeColorClass} transition-all duration-700 ease-out`}
+                strokeWidth="14"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
@@ -120,98 +171,142 @@ export default function ScoreMeter({ analysis }) {
               />
             </svg>
 
-            {/* Inner Percentage Display */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-              <span className="text-5xl font-black tracking-tight text-amber-400 font-mono">
+            {/* Centered Large Percentage & Label */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none">
+              <span className={`text-5xl sm:text-6xl font-black tracking-tight font-mono transition-colors ${
+                isHighPotato 
+                  ? 'text-amber-400' 
+                  : isMediumPotato 
+                  ? 'text-yellow-400' 
+                  : isDark ? 'text-slate-200' : 'text-slate-800'
+              }`}>
                 {displayScore}%
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mt-1">
-                Potato Score
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">
+                POTATO SIMILARITY
               </span>
             </div>
           </div>
 
-          {/* Rating Title & Badge */}
-          <div className="mt-4 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-amber-500/20 to-amber-700/20 border border-amber-500/40 text-amber-300 font-bold text-sm mb-2 shadow-lg">
-              {isHighSpud ? <Award className="w-4 h-4 text-amber-400" /> : <ShieldAlert className="w-4 h-4 text-slate-400" />}
-              {analysis.ratingTitle}
+          {/* Dynamic Score Interpretation (Section 10) */}
+          <div className="mt-5 text-center flex flex-col items-center">
+            <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold border transition-all ${
+              isHighPotato
+                ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 shadow-md shadow-amber-500/10'
+                : isMediumPotato
+                ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-300'
+                : isDark
+                ? 'bg-slate-800/80 border-slate-700 text-slate-300'
+                : 'bg-slate-100 border-slate-300 text-slate-700'
+            }`}>
+              <Award className="w-4 h-4 text-amber-500" />
+              <span>{interpretation}</span>
             </div>
-            <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-              {analysis.description}
-            </p>
+
+            {analysis.description && (
+              <p className={`text-xs max-w-sm mt-2 leading-relaxed ${
+                isDark ? 'text-slate-400' : 'text-slate-500'
+              }`}>
+                {analysis.description}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* AI Breakdown Stats */}
-        <div className="mt-6 pt-6 border-t border-slate-800/80">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
-            <span>Visual Feature Breakdown</span>
-            <span className="text-amber-400 text-[10px] font-normal">CLIP Confidence</span>
-          </h4>
-
-          <div className="grid grid-cols-2 gap-4">
-            
-            {/* Earthiness */}
-            <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium">Earthiness</span>
-                <span className="text-amber-400 font-semibold">{breakdown.earthiness || 0}%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-amber-600 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${breakdown.earthiness || 0}%` }}
-                ></div>
-              </div>
+        {/* Existing API Breakdown Metrics (Section 12) */}
+        {(breakdown.earthiness !== undefined || breakdown.texture_match !== undefined || breakdown.starch_index !== undefined || breakdown.roundness_factor !== undefined) && (
+          <div className={`mt-6 pt-5 border-t ${isDark ? 'border-slate-800/80' : 'border-slate-200'}`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                Visual Feature Breakdown
+              </span>
+              <span className="text-[10px] text-amber-500 font-medium">Neural Confidence</span>
             </div>
 
-            {/* Texture Match */}
-            <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium">Texture Match</span>
-                <span className="text-amber-400 font-semibold">{breakdown.texture_match || 0}%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-amber-500 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${breakdown.texture_match || 0}%` }}
-                ></div>
-              </div>
-            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {breakdown.earthiness !== undefined && (
+                <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-900/40 border-slate-800/80' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Earthiness</span>
+                    <span className="font-semibold text-amber-500">{breakdown.earthiness}%</span>
+                  </div>
+                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                    <div className="bg-amber-600 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${breakdown.earthiness}%` }} />
+                  </div>
+                </div>
+              )}
 
-            {/* Starch Index */}
-            <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium">Starch Index</span>
-                <span className="text-amber-400 font-semibold">{breakdown.starch_index || 0}%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-yellow-500 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${breakdown.starch_index || 0}%` }}
-                ></div>
-              </div>
-            </div>
+              {breakdown.texture_match !== undefined && (
+                <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-900/40 border-slate-800/80' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Texture Match</span>
+                    <span className="font-semibold text-amber-500">{breakdown.texture_match}%</span>
+                  </div>
+                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                    <div className="bg-amber-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${breakdown.texture_match}%` }} />
+                  </div>
+                </div>
+              )}
 
-            {/* Roundness Factor */}
-            <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-              <div className="flex justify-between text-xs mb-1.5">
-                <span className="text-slate-400 font-medium">Roundness Factor</span>
-                <span className="text-amber-400 font-semibold">{breakdown.roundness_factor || 0}%</span>
-              </div>
-              <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-amber-400 h-2 rounded-full transition-all duration-1000"
-                  style={{ width: `${breakdown.roundness_factor || 0}%` }}
-                ></div>
-              </div>
-            </div>
+              {breakdown.starch_index !== undefined && (
+                <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-900/40 border-slate-800/80' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Starch Index</span>
+                    <span className="font-semibold text-amber-500">{breakdown.starch_index}%</span>
+                  </div>
+                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                    <div className="bg-yellow-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${breakdown.starch_index}%` }} />
+                  </div>
+                </div>
+              )}
 
+              {breakdown.roundness_factor !== undefined && (
+                <div className={`p-3 rounded-xl border ${isDark ? 'bg-slate-900/40 border-slate-800/80' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className={isDark ? 'text-slate-400' : 'text-slate-600'}>Roundness Factor</span>
+                    <span className="font-semibold text-amber-500">{breakdown.roundness_factor}%</span>
+                  </div>
+                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`}>
+                    <div className="bg-amber-400 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${breakdown.roundness_factor}%` }} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Top Matches if provided by CLIP API */}
+        {topMatches && topMatches.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {topMatches.map((m, i) => (
+              <span
+                key={i}
+                className={`text-[11px] px-2.5 py-1 rounded-lg border ${
+                  isDark ? 'bg-slate-900/60 border-slate-800 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
+                }`}
+              >
+                {m.label}: <strong className="text-amber-500">{m.confidence}%</strong>
+              </span>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Section 13: ANALYZE ANOTHER Action Button */}
+      <button
+        type="button"
+        onClick={onReset}
+        className={`w-full mt-6 py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${
+          isDark
+            ? 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border-slate-700/80 hover:border-amber-500/40 shadow-md'
+            : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300 hover:border-amber-400 shadow-sm'
+        } hover:scale-[1.01] active:scale-[0.99] cursor-pointer`}
+      >
+        <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
+        <span>ANALYZE ANOTHER</span>
+      </button>
 
     </div>
   );
 }
+

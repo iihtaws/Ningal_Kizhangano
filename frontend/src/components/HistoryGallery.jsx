@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { History, Trash2, ExternalLink, Calendar, Award, ShieldAlert, Sparkles, Filter } from 'lucide-react';
+import { History, Trash2, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 
-export default function HistoryGallery({ history, onHistoryDeleted, onSelectHistoryItem }) {
+export default function HistoryGallery({ history = [], onHistoryDeleted, onSelectHistoryItem, theme = 'dark' }) {
   const [filter, setFilter] = useState('all');
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  const isDark = theme === 'dark';
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
@@ -12,7 +14,6 @@ export default function HistoryGallery({ history, onHistoryDeleted, onSelectHist
     try {
       await axios.delete(`/api/history/${id}`);
       if (onHistoryDeleted) onHistoryDeleted();
-      if (selectedItem && selectedItem._id === id) setSelectedItem(null);
     } catch (err) {
       alert('Could not delete record.');
     }
@@ -24,131 +25,149 @@ export default function HistoryGallery({ history, onHistoryDeleted, onSelectHist
     return true;
   });
 
+  if (!history || history.length === 0) {
+    return null; // Keep interface clean if no history yet
+  }
+
   return (
-    <div className="glass-panel rounded-3xl p-6 sm:p-8 mt-10 shadow-2xl">
-      
+    <section className={`w-full rounded-3xl p-6 sm:p-7 mt-8 transition-all duration-300 border ${
+      isDark ? 'glass-panel-dark' : 'glass-panel-light'
+    }`}>
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-800">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <History className="w-5 h-5" />
+          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
+            <History className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-100">Analysis History Gallery</h2>
-            <p className="text-xs text-slate-400">Stored in MongoDB database instance</p>
+            <div className="flex items-center gap-2">
+              <h3 className={`text-sm font-bold tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>
+                Recent Analyses
+              </h3>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-200 text-slate-700'
+              }`}>
+                {history.length}
+              </span>
+            </div>
+            <p className={`text-[11px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Stored in MongoDB database
+            </p>
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-2 bg-slate-900/80 p-1 rounded-2xl border border-slate-800 self-start sm:self-auto">
+        <div className="flex items-center gap-2">
+          {/* Filter Pills */}
+          <div className={`hidden sm:flex items-center gap-1 p-1 rounded-xl border ${
+            isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-slate-100 border-slate-200'
+          }`}>
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'potato', label: '🥔 Potato' },
+              { id: 'imposter', label: 'Non-Potato' },
+            ].map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                onClick={() => setFilter(f.id)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                  filter === f.id
+                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
+                    : isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Toggle Expand */}
           <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              filter === 'all'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            aria-label="Toggle history visibility"
+            className={`p-1.5 rounded-xl border transition-colors ${
+              isDark ? 'border-slate-800 text-slate-400 hover:text-slate-200' : 'border-slate-200 text-slate-600 hover:text-slate-900'
             }`}
           >
-            All ({history.length})
-          </button>
-          <button
-            onClick={() => setFilter('potato')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              filter === 'potato'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            🥔 High Spud
-          </button>
-          <button
-            onClick={() => setFilter('imposter')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              filter === 'imposter'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            🚫 Imposters
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Gallery Grid */}
-      {filteredHistory.length === 0 ? (
-        <div className="py-12 text-center text-slate-500">
-          <p className="text-sm">No analysis history found in this category.</p>
-          <p className="text-xs mt-1 text-slate-600">Upload your first image to populate the MongoDB database!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredHistory.map((item) => {
-            const isHigh = item.score >= 60;
-            return (
-              <div
-                key={item._id}
-                onClick={() => onSelectHistoryItem(item)}
-                className="glass-panel glass-panel-hover rounded-2xl overflow-hidden cursor-pointer flex flex-col justify-between group border border-slate-800 hover:border-amber-500/40 relative"
-              >
-                {/* Image Preview Container */}
-                <div className="relative h-44 w-full bg-slate-950 overflow-hidden flex items-center justify-center">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.ratingTitle}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      // Fallback placeholder if relative image is purged
-                      e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><text y=".9em" font-size="90">🥔</text></svg>';
-                    }}
-                  />
-
-                  {/* Score Pill Badge */}
-                  <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full font-extrabold text-xs shadow-lg backdrop-blur-md border ${
-                    isHigh
-                      ? 'bg-amber-500/90 text-slate-950 border-amber-300'
-                      : 'bg-slate-900/90 text-slate-300 border-slate-700'
-                  }`}>
-                    {item.score}% Potato
-                  </div>
-
-                  {/* Delete Button */}
-                  <button
-                    onClick={(e) => handleDelete(e, item._id)}
-                    className="absolute top-3 left-3 p-1.5 rounded-lg bg-slate-900/80 hover:bg-red-500/90 text-slate-400 hover:text-white transition-colors border border-slate-700 hover:border-red-400"
-                    title="Delete record"
+      {/* Grid of History Cards */}
+      {isExpanded && (
+        <div className="mt-5 pt-4 border-t border-slate-800/50">
+          {filteredHistory.length === 0 ? (
+            <p className="text-xs text-center py-4 text-slate-500">No items match this filter.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+              {filteredHistory.map((item) => {
+                const isSpud = item.score >= 60;
+                return (
+                  <div
+                    key={item._id}
+                    onClick={() => onSelectHistoryItem(item)}
+                    className={`rounded-2xl overflow-hidden cursor-pointer group border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
+                      isDark 
+                        ? 'bg-slate-900/50 hover:bg-slate-900 border-slate-800/80 hover:border-amber-500/40' 
+                        : 'bg-white hover:bg-slate-50 border-slate-200 hover:border-amber-300'
+                    }`}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                    {/* Thumbnail */}
+                    <div className="relative h-28 w-full bg-black/40 overflow-hidden flex items-center justify-center">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.ratingTitle || 'History item'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 100 100"><text y=".9em" font-size="80">🥔</text></svg>';
+                        }}
+                      />
 
-                {/* Info Footer */}
-                <div className="p-4 bg-slate-900/40 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-200 line-clamp-1 group-hover:text-amber-400 transition-colors">
-                      {item.ratingTitle || 'Potato Analysis'}
-                    </h4>
-                    <p className="text-xs text-slate-400 line-clamp-1 mt-1">
-                      {item.description || 'CLIP Neural Network prediction.'}
-                    </p>
+                      {/* Score Badge */}
+                      <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-extrabold shadow-sm backdrop-blur-md ${
+                        isSpud
+                          ? 'bg-amber-500/90 text-slate-950'
+                          : isDark ? 'bg-slate-900/90 text-slate-300 border border-slate-700' : 'bg-slate-100/90 text-slate-700 border border-slate-300'
+                      }`}>
+                        {item.score}%
+                      </span>
+
+                      {/* Delete */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleDelete(e, item._id)}
+                        className="absolute top-2 left-2 p-1 rounded-md bg-black/60 hover:bg-red-600 text-slate-300 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete entry"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+
+                    {/* Meta */}
+                    <div className="p-2.5">
+                      <p className={`text-xs font-semibold truncate ${
+                        isDark ? 'text-slate-200 group-hover:text-amber-400' : 'text-slate-800 group-hover:text-amber-700'
+                      }`}>
+                        {item.filename?.replace(/^potato-/, '') || 'Image'}
+                      </p>
+                      <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-2.5 h-2.5" />
+                          {new Date(item.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </span>
+                        <span className="text-amber-500 font-medium">Inspect</span>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="mt-3 pt-3 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3 text-slate-400" />
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </span>
-                    <span className="text-amber-400/80 font-semibold group-hover:underline flex items-center gap-0.5">
-                      Inspect <ExternalLink className="w-3 h-3" />
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
-
-    </div>
+    </section>
   );
 }
+
