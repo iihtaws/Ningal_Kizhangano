@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles, Database, Cpu, RefreshCw, Sun, Moon, Zap } from 'lucide-react';
 import axios from 'axios';
 
-export default function Navbar({ theme = 'dark', onToggleTheme }) {
+export default function Navbar({ theme = 'dark', onToggleTheme, activeView = 'scanner', onSelectView }) {
   const [health, setHealth] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -36,8 +36,11 @@ export default function Navbar({ theme = 'dark', onToggleTheme }) {
         }`}>
           
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="relative group cursor-pointer">
+          <div 
+            onClick={() => onSelectView && onSelectView('scanner')}
+            className="flex items-center gap-3 cursor-pointer select-none"
+          >
+            <div className="relative group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-yellow-400 flex items-center justify-center text-xl shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform duration-300">
                 🥔
               </div>
@@ -51,7 +54,6 @@ export default function Navbar({ theme = 'dark', onToggleTheme }) {
                 }`}>
                   Kizhangano?
                 </span>
-               
               </div>
               <span className={`text-[11px] hidden sm:block ${
                 isDark ? 'text-slate-400' : 'text-slate-500'
@@ -60,6 +62,38 @@ export default function Navbar({ theme = 'dark', onToggleTheme }) {
               </span>
             </div>
           </div>
+
+          {/* Center Navigation Tabs */}
+          <nav className={`flex items-center gap-1 p-1 rounded-2xl border ${
+            isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-slate-100 border-slate-200'
+          }`}>
+            <button
+              type="button"
+              onClick={() => onSelectView && onSelectView('scanner')}
+              className={`px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeView === 'scanner'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>🥔 Scanner</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onSelectView && onSelectView('leaderboard')}
+              className={`px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 relative ${
+                activeView === 'leaderboard'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <span>🏆 Leaderboard</span>
+              <span className={`w-2 h-2 rounded-full ${
+                activeView === 'leaderboard' ? 'bg-slate-950' : 'bg-amber-500 animate-pulse'
+              }`} />
+            </button>
+          </nav>
 
           {/* Center/Right Info & Controls */}
           <div className="flex items-center gap-2 sm:gap-3">

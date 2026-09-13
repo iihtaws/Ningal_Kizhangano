@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { History, Trash2, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 
-export default function HistoryGallery({ history = [], onHistoryDeleted, onSelectHistoryItem, theme = 'dark' }) {
+export default function HistoryGallery({ history = [], onHistoryDeleted, onSelectHistoryItem, onViewLeaderboard, theme = 'dark' }) {
   const [filter, setFilter] = useState('all');
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -57,6 +57,18 @@ export default function HistoryGallery({ history = [], onHistoryDeleted, onSelec
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Quick View Leaderboard Button */}
+          {onViewLeaderboard && (
+            <button
+              type="button"
+              onClick={onViewLeaderboard}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-sm"
+              title="View Hall of Fame Leaderboard"
+            >
+              <span>🏆 Leaderboard</span>
+            </button>
+          )}
+
           {/* Filter Pills */}
           <div className={`hidden sm:flex items-center gap-1 p-1 rounded-xl border ${
             isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-slate-100 border-slate-200'

@@ -21,6 +21,7 @@ export default function ImageUploader({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [analysisStageIdx, setAnalysisStageIdx] = useState(0);
+  const [subjectName, setSubjectName] = useState('');
 
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -592,12 +593,38 @@ export default function ImageUploader({
         </div>
       </div>
 
+      {/* Optional Subject / Candidate Name for the Leaderboard */}
+      <div className="mt-5">
+        <label className={`block text-xs font-semibold mb-1.5 flex items-center justify-between ${
+          isDark ? 'text-slate-300' : 'text-slate-700'
+        }`}>
+          <span className="flex items-center gap-1.5">
+            <span>🏷️ Subject / Candidate Name</span>
+            <span className="text-[10px] text-amber-500 font-normal">(Shown on Leaderboard)</span>
+          </span>
+          <span className="text-[10px] text-slate-500 font-normal">Optional</span>
+        </label>
+        <input
+          type="text"
+          value={subjectName}
+          onChange={(e) => setSubjectName(e.target.value)}
+          placeholder="e.g. Anand, Grandpa's Slippers, Office Plant, Golden Nugget..."
+          disabled={isAnalyzing}
+          maxLength={40}
+          className={`w-full px-3.5 py-2.5 rounded-xl text-xs outline-none border transition-all ${
+            isDark
+              ? 'bg-slate-900/70 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500/60'
+              : 'bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-amber-500'
+          }`}
+        />
+      </div>
+
       {/* Primary Action Button (Section 7: MEASURE POTATO-NESS) */}
       <button
         type="button"
-        onClick={() => selectedFile && onAnalyze(selectedFile)}
+        onClick={() => selectedFile && onAnalyze(selectedFile, subjectName)}
         disabled={!selectedFile || isAnalyzing || isCameraActive}
-        className={`w-full mt-6 py-4 px-6 rounded-2xl font-bold text-sm tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${
+        className={`w-full mt-5 py-4 px-6 rounded-2xl font-bold text-sm tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-3 shadow-lg ${
           !selectedFile || isAnalyzing || isCameraActive
             ? isDark
               ? 'bg-slate-800/60 text-slate-500 border border-slate-800 cursor-not-allowed'

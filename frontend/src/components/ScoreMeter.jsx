@@ -13,7 +13,7 @@ export function getScoreInterpretation(score) {
   return 'Extremely potato';
 }
 
-export default function ScoreMeter({ analysis, previewUrl, onReset, theme = 'dark' }) {
+export default function ScoreMeter({ analysis, previewUrl, onReset, onViewLeaderboard, theme = 'dark' }) {
   const [displayScore, setDisplayScore] = useState(0);
 
   const isDark = theme === 'dark';
@@ -292,19 +292,31 @@ export default function ScoreMeter({ analysis, previewUrl, onReset, theme = 'dar
         )}
       </div>
 
-      {/* Section 13: ANALYZE ANOTHER Action Button */}
-      <button
-        type="button"
-        onClick={onReset}
-        className={`w-full mt-6 py-3.5 px-6 rounded-2xl font-bold text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${
-          isDark
-            ? 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border-slate-700/80 hover:border-amber-500/40 shadow-md'
-            : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300 hover:border-amber-400 shadow-sm'
-        } hover:scale-[1.01] active:scale-[0.99] cursor-pointer`}
-      >
-        <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
-        <span>ANALYZE ANOTHER</span>
-      </button>
+      {/* Section 13: Action Buttons */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+        {onViewLeaderboard && (
+          <button
+            type="button"
+            onClick={onViewLeaderboard}
+            className="py-3.5 px-4 rounded-2xl font-bold text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 shadow-md shadow-amber-500/20 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+          >
+            <span>🏆 View on Leaderboard</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onReset}
+          className={`py-3.5 px-4 rounded-2xl font-bold text-xs tracking-wider uppercase transition-all duration-300 flex items-center justify-center gap-2 border ${
+            isDark
+              ? 'bg-slate-900/80 hover:bg-slate-800 text-slate-200 border-slate-700/80 hover:border-amber-500/40 shadow-md'
+              : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-300 hover:border-amber-400 shadow-sm'
+          } hover:scale-[1.01] active:scale-[0.99] cursor-pointer ${!onViewLeaderboard ? 'col-span-full' : ''}`}
+        >
+          <RotateCcw className="w-3.5 h-3.5 text-amber-500" />
+          <span>ANALYZE ANOTHER</span>
+        </button>
+      </div>
 
     </div>
   );
