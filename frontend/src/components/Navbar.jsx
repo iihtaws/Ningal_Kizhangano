@@ -49,15 +49,9 @@ export default function Navbar({ theme = 'dark', onToggleTheme }) {
                 <span className={`text-lg font-bold tracking-tight ${
                   isDark ? 'text-white' : 'text-slate-900'
                 }`}>
-                  Potato-O-Meter
+                  Kizhangano?
                 </span>
-                <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full uppercase tracking-wider ${
-                  isDark 
-                    ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' 
-                    : 'bg-amber-50 text-amber-700 border border-amber-200'
-                }`}>
-                  AI Vision
-                </span>
+               
               </div>
               <span className={`text-[11px] hidden sm:block ${
                 isDark ? 'text-slate-400' : 'text-slate-500'
